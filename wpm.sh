@@ -25,7 +25,7 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-# Check if current parsed option is used in specified mode, quit if not
+# Check if current parsed option is used in one of the specified modes, quit if not
 checkmode () {
     local option=$1
     shift 1
@@ -43,7 +43,7 @@ checkmode () {
     fi
 }
 
-# Wallpaper list manipulation functions
+##### Wallpaper list manipulation functions #####
 
 # Get the line number of a wallpaper in a list
 get_numline () {
@@ -64,7 +64,7 @@ remove_wp () {
     sed -i "`get_numline \"$1\" $2`d" $2
 }
 
-# Options parsing
+##### Options parsing #####
 
 while getopts ":MCLIf:d:s:r:pnRD:" opt; do
     case $opt in
@@ -80,83 +80,91 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
         I)
             mode=info
             ;;
-    # Manual mode
+    ##### Manual mode #####
         f|d)
             checkmode $opt manual
             case $opt in
-                f)  # Load the wallpaper from a file
+        # Load the wallpaper from a file
+                f)  
                     set_wp "$OPTARG"
-                    exit
+                    exit 0
                     ;;
-                d)  # Load all the wallpapers from a directory
-                    dirs=($OPTARG)
+        # Load all the wallpapers from a directory
+                d)
+                    dirs=("$OPTARG")
                     ;;
             esac
             ;;
-    # Custom mode
-        s|r)
+    ##### Custom mode #####
+        # Remove current wallpaper from list
+        r)
             checkmode $opt custom
+            remove_wp "`get_wp`" $OPTARG
+            exit 0
+            ;;
+    ##### Last mode #####
+        p|n)
+            checkmode $opt last
+            numline=`get_numline "\`get_wp\`" $LAST_WPL`
             case $opt in
-                s)  # Append current wallpaper to list
+        # Load previous wallpaper in last list
+                p)
+                    numline=$((numline - 1))
+                    if [ $numline -lt 1 ]; then
+                        numline=`wc -l $LAST_WPL | cut -d\  -f1`
+                    fi
+                    ;;
+        # Load next wallpaper in last list
+                n) 
+                    numline=$((numline + 1))
+                    if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
+                        numline=1
+                    fi
+                    ;;
+            esac
+            set_wp "`sed \"${numline}q;d\" $LAST_WPL`"
+            exit 0
+            ;;
+    ##### Multi mode #####
+        s)
+            checkmode $opt custom last
+            case $mode in
+        # Append current wallpaper to custom list
+                custom)
                     save_wp "`get_wp`" $OPTARG
                     ;;
-                r)  # Remove current wallpaper from list
-                    remove_wp "`get_wp`" $OPTARG
+        # Save last list in the file passed in argument
+                last)
+                    cat $LAST_WPL > $OPTARG
                     ;;
             esac
-            exit
+            exit 0
             ;;
-    # Last mode
-        p|n|s)
-            checkmode $opt last
-            case $opt in
-                p|n)
-                    numline=`get_numline "\`get_wp\`" $LAST_WPL`
-                    case $opt in
-                        p)  # Load previous wallpaper in last list
-                            numline=$((numline - 1))
-                            if [ $numline -lt 1 ]; then
-                                numline=`wc -l $LAST_WPL | cut -d\  -f1`
-                                echo $numline
-                            fi
-                            ;;
-                        n)  # Load next wallpaper in last list
-                            numline=$((numline + 1))
-                            if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
-                                numline=1
-                            fi
-                            ;;
-                    esac
-                    set_wp "`sed \"${numline}q;d\" $LAST_WPL`"
-                    ;;
-                s)
-                    echo $LAST_WPL > $OPTARG
-                    ;;
-            esac
-            exit
-            ;;
-    # Mode independant options
-        R)  # Random selection in wallpaper list
+    ##### Mode independant options #####
+        # Random selection in wallpaper list
+        R)
             random=true
             ;;
-        D)  # Daemon mode : runs indefinitely, changing wallpaper within a delay given in argument
+        # Daemon mode : runs indefinitely, changing wallpaper within a delay given in argument
+        D)
             daemon=true
             DELAY=$OPTARG
             ;;
-    # Missing argument handling
+    ##### Missing argument handling #####
         :)
             case $OPTARG in
-                # Use default custom list with -Cr
+            ##### Custom mode #####
+                # Use default custom list in custom mode
                 r)  
                     checkmode $OPTARG custom
                     remove_wp "`get_wp`" $CUSTOM_WPL
-                    exit
+                    exit 0
                     ;;
-                # Multi mode options
+            ##### Multi mode #####
                 f|d)
                     checkmode $OPTARG manual info
                     case $mode in
-                        # Argument needed in manual mode
+                # Argument needed in manual mode
                         manual)
                             case $OPTARG in
                                 f)
@@ -169,10 +177,12 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
                             ;;
                         info)
                             case $OPTARG in
-                                f)  # Print current wallpaper path
+                # Print current wallpaper path
+                                f)
                                     echo "`get_wp`"
                                     ;;
-                                d)  # Print current wallpaper directory path
+                # Print current wallpaper directory path
+                                d)
                                     echo "`dirname \"\`get_wp\`\"`"
                                     ;;
                             esac
@@ -183,18 +193,18 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
                 s)
                     checkmode $OPTARG custom last
                     case $mode in
-                        # Use default custom list with -Cs
+                # Use default custom list in custom mode
                         custom)
                             save_wp "`get_wp`" $CUSTOM_WPL
                             ;;
-                        # Replace default custom list by last list
+                # Replace default custom list by last list 
                         last)
-                            echo "Usage: wpm -Ls <filepath>"
-                            exit 4
+                            cat $LAST_WPL > $CUSTOM_WPL
                             ;;
                     esac
-                    exit
+                    exit 0
                     ;;
+            ##### Independant mode #####
                 # Use a default delay of 6 minutes in daemon mode
                 D)
                     daemon=true
@@ -202,7 +212,7 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
                     ;;
             esac
             ;;
-    # Invalid option
+    ##### Invalid option #####
         ?)
             echo "Invalid option: -$OPTARG"
             exit 1
@@ -217,8 +227,10 @@ if [ $mode = none ]; then
     exit 2
 fi
 
-# Mode specific operations
+##### Mode specific operations #####
+
 if [ $mode = manual ]; then
+    # Quit if there are no additional options
     if [ -z "`echo $dirs`" ]; then
         echo "Usage: wpm -Mf <wallpaper>..."
         echo "       wpm -Md <directory>... [-R][-D [<delay>]]"
@@ -226,6 +238,7 @@ if [ $mode = manual ]; then
     fi
 else
     if [ $mode = custom ]; then
+        # Load the custom list passed in argument
         if [ -n "$1" ]; then
             if [ -f $1 ]; then
                 load_wpl $1
@@ -233,11 +246,13 @@ else
                 echo "Wallpaper list must be a regular file"
                 exit 3
             fi
+        # Load th default custom list without argument
         else
             load_wpl $CUSTOM_WPL
         fi
     else
         if [ $mode = last ]; then
+            # Load the last list
             load_wpl $LAST_WPL
         fi
     fi
@@ -254,8 +269,8 @@ if [ `echo "$pids" | wc -l | cut -d\  -f1` -gt 1 ]; then
 fi
 
 # Fill list of wallpapers
-for dir in $dirs; do
-    wps+=`find $dir -type f`"\n"
+for dir in "${dirs[@]}"; do
+    wps+=`find "$dir" -type f`"\n"
 done
 wps=`echo "$wps" | sed "s/^\n$//g"`
 wpsnb=`echo "$wps" | wc -l | cut -d\  -f1`
