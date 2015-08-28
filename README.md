@@ -45,9 +45,9 @@ The list must contain one absolute path to a wallpaper per line.
 
 Without options, loads the list used by the last instance of **`wpm`** (stored in *.wpm/last.wpl*).
 
-**`-p`** : Loads the previous wallpaper in the list, relatively to the current wallpaper (if exisiting in the list)
-**`-n`** : Loads the next wallpaper in the list, relatively to the current wallpaper (if exisiting in the list)  
-**`-s`** : Save the list in the file passed in argument
+**`-p`** : Loads the **n**th wallpaper preceding the current (if existing) in the list, with **n** given in argument (default set to 1)
+**`-n`** : Loads the **n**th wallpaper following the current (if existing) in the list, with **n** given in argument (default set to 1)
+**`-s`** : Save the list in the file passed in argument (default set to *.wpm/custom.wpl*)
 
 ### Info mode (-I option)
 
@@ -65,4 +65,4 @@ Load the custom wallpaper list and change wallpaper every 10 minutes :
 `wpm -CD 10000`
 
 Replace the default custom list by the last list :
-`wpm -Ls <path_to_wpm>/.wpm/custom.wpl`
+`wpm -Ls
