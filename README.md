@@ -64,5 +64,5 @@ Load a random wallpaper within ~/Images/Wallpapers/ :
 Load the custom wallpaper list and change wallpaper every 10 minutes :  
 `wpm -CD 10000`
 
-Replace the default custom list by the last list :
-`wpm -Ls
+Replace the default custom list by the last list :  
+`wpm -Ls`
