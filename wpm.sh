@@ -17,8 +17,8 @@ random=false
 daemon=false
 
 if [ $# -eq 0 ]; then
-    echo "Usage: wpm    -Mf         <wallpaper>...      [-R]    [-D [<delay>]]"
-    echo "       wpm    -Md         <directory>...      [-R]    [-D [<delay>]]"
+    echo "Usage: wpm    -Mf         \"<wallpaper>...\"  [-R]    [-D [<delay>]]"
+    echo "       wpm    -Md         \"<directory>...\"  [-R]    [-D [<delay>]]"
     echo "       wpm    -C[s|r]     [<wallpaper_list>]  [-R]    [-D [<delay>]]"
     echo "       wpm    -L[p|n|s    [<wallpaper_list>]] [-R]    [-D [<delay>]]"
     echo "       wpm    -I[f|d]"
@@ -189,7 +189,8 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
                             ;;
                         # Replace default custom list by last list
                         last)
-                            echo $LAST_WPL > $CUSTOM_WPL
+                            echo "Usage: wpm -Ls <filepath>"
+                            exit 4
                             ;;
                     esac
                     exit

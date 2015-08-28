@@ -19,19 +19,19 @@ The program runs indefinitely, looping over the list and changing the current wa
 ### Synopsis
 
 ```
-wpm    -Mf         <wallpaper>...      [-R]    [-D [<delay>]]  
-wpm    -Md         <directory>...      [-R]    [-D [<delay>]]  
-wpm    -C[s|r]     [<wallpaper_list>]  [-R]    [-D [<delay>]]  
-wpm    -L[p|n|s    [<wallpaper_list>]] [-R]    [-D [<delay>]]  
+wpm    -Mf         "<wallpaper>..."     [-R]    [-D [<delay>]]  
+wpm    -Md         "<directory>..."     [-R]    [-D [<delay>]]  
+wpm    -C[s|r]     [<wallpaper_list>]   [-R]    [-D [<delay>]]  
+wpm    -L[p|n|s    [<wallpaper_list>]]  [-R]    [-D [<delay>]]  
 wpm    -I[f|d]
 ```
 
 ### Manual mode (-M option)
 
-Create the list of wallpapers with the paths given in argument.
+Create the list of wallpapers with the paths of the quoted list given in argument.
 
-**`-f`** : Loads one or more image files (list order equal to arguments order)  
-**`-d`** : Loads one or more directories filled exclusively with image files (list order equal to arguments order, with alphabetical order per directory)  
+**`-f`** : Loads one or more image files (list order equal to argument order)  
+**`-d`** : Loads one or more directories filled exclusively with image files (list order equal to argument order, with alphabetical order per directory)  
 
 ### Custom mode (-C option)
 
@@ -43,11 +43,11 @@ The list must contain one absolute path to a wallpaper per line.
 
 ### Last mode (-L option)
 
-Loads the list used by a previous instance of **`wpm`**, contained in the file given in argument (default set to *.wpm/last.wpl*).
+Without options, loads the list used by the last instance of **`wpm`** (stored in *.wpm/last.wpl*).
 
-**`-p`** : Loads the previous wallpaper in the list, relatively to the current wallpaper  
-**`-n`** : Loads the next wallpaper in the list, relatively to the current wallpaper  
-**`-s`** : Replace the default custom list (*.wpm/custom.wpl*) by the last list  
+**`-p`** : Loads the previous wallpaper in the list, relatively to the current wallpaper (if exisiting in the list)
+**`-n`** : Loads the next wallpaper in the list, relatively to the current wallpaper (if exisiting in the list)  
+**`-s`** : Save the list in the file passed in argument
 
 ### Info mode (-I option)
 
@@ -64,5 +64,5 @@ Load a random wallpaper within ~/Images/Wallpapers/ :
 Load the custom wallpaper list and change wallpaper every 10 minutes :  
 `wpm -CD 10000`
 
-Load the previous wallpaper relatively to the current (if existing) in a specified wallpaper list file :  
-`wpm -Lp 21-08-2015.wpl`
+Replace the default custom list by the last list :
+`wpm -Ls <path_to_wpm>/.wpm/custom.wpl`
