@@ -47,7 +47,7 @@ Without options, loads the list used by the last instance of **`wpm`** (stored i
 
 **`-p`** : Loads the **n**th wallpaper preceding the current (if existing) in the last list, with **n** given in argument (default set to 1)  
 **`-n`** : Loads the **n**th wallpaper following the current (if existing) in the last list, with **n** given in argument (default set to 1)  
-**`-s`** : Save the last list in the file passed in argument (default set to *.wpm/custom.wpl*)
+**`-s`** : Saves the last list in the file passed in argument (default set to *.wpm/custom.wpl*)
 
 ### Info mode (-I option)
 
