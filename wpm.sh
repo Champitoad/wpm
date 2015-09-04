@@ -66,7 +66,7 @@ remove_wp () {
 
 ##### Options parsing #####
 
-while getopts ":MCLIf:d:s:r:pnRD:" opt; do
+while getopts ":MCLIf:d:s:r:p:n:RD:" opt; do
     case $opt in
         M)
             mode=manual
@@ -107,16 +107,16 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
             checkmode $opt last
             numline=`get_numline "\`get_wp\`" $LAST_WPL`
             case $opt in
-        # Load previous wallpaper in last list
+        # Load $OPTARGth previous wallpaper in last list
                 p)
-                    numline=$((numline - 1))
+                    numline=$((numline - OPTARG))
                     if [ $numline -lt 1 ]; then
                         numline=`wc -l $LAST_WPL | cut -d\  -f1`
                     fi
                     ;;
-        # Load next wallpaper in last list
+        # Load $OPTARGth next wallpaper in last list
                 n) 
-                    numline=$((numline + 1))
+                    numline=$((numline + OPTARG))
                     if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
                         numline=1
                     fi
@@ -158,6 +158,29 @@ while getopts ":MCLIf:d:s:r:pnRD:" opt; do
                 r)  
                     checkmode $OPTARG custom
                     remove_wp "`get_wp`" $CUSTOM_WPL
+                    exit 0
+                    ;;
+            ##### Last mode #####
+                p|n)
+                    checkmode $OPTARG last
+                    numline=`get_numline "\`get_wp\`" $LAST_WPL`
+                    case $OPTARG in
+                # Load previous wallpaper in last list
+                        p)
+                            numline=$((numline - 1))
+                            if [ $numline -lt 1 ]; then
+                                numline=`wc -l $LAST_WPL | cut -d\  -f1`
+                            fi
+                            ;;
+                # Load next wallpaper in last list
+                        n) 
+                            numline=$((numline + 1))
+                            if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
+                                numline=1
+                            fi
+                            ;;
+                    esac
+                    set_wp "`sed \"${numline}q;d\" $LAST_WPL`"
                     exit 0
                     ;;
             ##### Multi mode #####
