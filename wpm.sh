@@ -25,7 +25,8 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-# Check if current parsed option is used in one of the specified modes, quit if not
+
+# Check if option $1 is used in one of the specified modes, quit if not
 checkmode () {
     local option=$1
     shift 1
@@ -42,6 +43,7 @@ checkmode () {
         exit `printf "%d" "'$option"`
     fi
 }
+
 
 ##### Wallpaper list manipulation functions #####
 
@@ -64,22 +66,37 @@ remove_wp () {
     sed -i "`get_numline \"$1\" $2`d" $2
 }
 
+
 ##### Options parsing #####
 
-while getopts ":MCLIf:d:s:r:p:n:RD:" opt; do
+# Get mode
+getopts ":MCLI" opt
+case $opt in
+    M)
+        mode=manual
+        ;;
+    C)
+        mode=custom
+        ;;
+    L)
+        mode=last
+        ;;
+    I)
+        mode=info
+        ;;
+    "")
+        echo "You must choose a mode to use wpm"
+        exit 2
+        ;;
+    *)
+        echo "-$opt is not a valid mode option"
+        exit 3
+        ;;
+esac
+
+# Parse options
+while getopts ":f:d:s:r:p:n:RD:" opt; do
     case $opt in
-        M)
-            mode=manual
-            ;;
-        C)
-            mode=custom
-            ;;
-        L)
-            mode=last
-            ;;
-        I)
-            mode=info
-            ;;
     ##### Manual mode #####
         f|d)
             checkmode $opt manual
@@ -148,7 +165,7 @@ while getopts ":MCLIf:d:s:r:p:n:RD:" opt; do
         # Daemon mode : runs indefinitely, changing wallpaper within a delay given in argument
         D)
             daemon=true
-            DELAY=$OPTARG
+            delay=$OPTARG
             ;;
     ##### Missing argument handling #####
         :)
@@ -231,7 +248,7 @@ while getopts ":MCLIf:d:s:r:p:n:RD:" opt; do
                 # Use a default delay of 6 minutes in daemon mode
                 D)
                     daemon=true
-                    DELAY=600
+                    delay=600
                     ;;
             esac
             ;;
@@ -244,11 +261,6 @@ while getopts ":MCLIf:d:s:r:p:n:RD:" opt; do
 done
 shift $((OPTIND - 1)) # Remove options and their arguments from argument list
 
-# Quit if no mode option was given
-if [ $mode = none ]; then
-    echo "You must choose a mode to use wpm"
-    exit 2
-fi
 
 ##### Mode specific operations #####
 
@@ -267,7 +279,7 @@ else
                 load_wpl $1
             else
                 echo "Wallpaper list must be a regular file"
-                exit 3
+                exit 4
             fi
         # Load th default custom list without argument
         else
@@ -281,7 +293,9 @@ else
     fi
 fi
 
-# One instance of wpm at a time
+
+##### One instance of wpm at a time #####
+
 pids=`ps -C wpm -o pid=`
 if [ `echo "$pids" | wc -l | cut -d\  -f1` -gt 1 ]; then
     while read -r pid; do
@@ -291,11 +305,16 @@ if [ `echo "$pids" | wc -l | cut -d\  -f1` -gt 1 ]; then
     done <<< "$pids"
 fi
 
-# Fill list of wallpapers
+
+##### Fill list of wallpapers #####
+
+# Add wallpapers from the list of dirs
 for dir in "${dirs[@]}"; do
     wps+=`find "$dir" -type f`"\n"
 done
-wps=`echo "$wps" | sed "s/^\n$//g"`
+wps=`echo "$wps" | sed "s/^\n$//g"` # Remove blank lines
+
+# Exit if there is one or no wallpaper in the list
 wpsnb=`echo "$wps" | wc -l | cut -d\  -f1`
 if [ $wpsnb -le 1 ]; then
     if [ $wpsnb -eq 0 ]; then
@@ -303,20 +322,30 @@ if [ $wpsnb -le 1 ]; then
     fi
     exit 0
 fi
+
+# Write the list in the last list file for next instance
 echo "$wps" > $LAST_WPL
 
-# Loop through list of wallpapers
+
+##### Loop through list of wallpapers #####
+
+# Infinite loop to read again the list in daemon mode
 while [ 1 ]; do
+    # Randomize list if in random mode
     if [ $random = true ]; then
         wps=`echo "$wps" | shuf`
     fi
+    # Read the list line by line
     while read -r wp; do
         if [ "$wp" != "`get_wp`" ] || [ $random = false ]; then
+            # Change wallpaper (finally!)
             set_wp "$wp"
+            # Exit if in normal mode...
             if [ $daemon = false ]; then
                 exit 0
             fi
-            sleep $DELAY
+            # ...or read the entire list in daemon mode
+            sleep $delay
         fi
     done <<< "$wps"
 done
