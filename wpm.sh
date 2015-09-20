@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # >>> TODO <<<
-# > Correct bug that removes default custom list when invoking -Cr option with an inexistent current wallpaper in the last list
 # > -L[p|n] compatible with daemon mode
 # > function for every argument-taking option ?
 # > multiple files/directories in manual mode
@@ -68,7 +67,12 @@ save_wp () {
 }
 # Remove a wallpaper from a list
 remove_wp () {
-    sed -i "`get_numline \"$1\" $2`d" $2
+    local numline=`get_numline "$1" $2`
+    if [ "$numline" ]; then
+        sed -i "${numline}d" $2
+    else
+        echo "Current wallpaper absent from the custom list"
+    fi
 }
 
 
