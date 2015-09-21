@@ -196,18 +196,19 @@ while getopts ":f:d:s:r:p:n:RD:" opt; do
             p|n)
                 checkmode $OPTARG last
                 numline=`get_numline "\`get_wp\`" $LAST_WPL`
+                nblines=`wc -l $LAST_WPL | cut -d\  -f1`
                 case $OPTARG in
             # Load previous wallpaper in last list
                 p)
                     numline=$((numline - 1))
                     if [ $numline -lt 1 ]; then
-                        numline=`wc -l $LAST_WPL | cut -d\  -f1`
+                        numline=$nblines
                     fi
                     ;;
             # Load next wallpaper in last list
                 n) 
                     numline=$((numline + 1))
-                    if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
+                    if [ $numline -gt $nblines ]; then
                         numline=1
                     fi
                     ;;
@@ -329,7 +330,7 @@ fi
 for dir in "${dirs[@]}"; do
     wps+=`find "$dir" -type f`"\n"
 done
-wps=`echo "$wps" | sed "s/^\n$//g"` # Remove blank lines
+wps=${wps%\\n} # Remove last \n
 
 # Exit if there is one or no wallpaper in the list
 wpsnb=`echo "$wps" | wc -l | cut -d\  -f1`
