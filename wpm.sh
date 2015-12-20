@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # >>> TODO <<<
-# > -L[p|n] compatible with daemon mode
 # > function for every argument-taking option ?
 # > multiple files/directories in manual mode
+# > -L[p|n] compatible with daemon mode
 # > -Mc option to use the color passed in argument as a wallpaper
 # > -h help option
 
@@ -132,18 +132,19 @@ while getopts ":f:d:s:r:p:n:RD:" opt; do
         p|n)
             checkmode $opt last
             numline=`get_numline "\`get_wp\`" $LAST_WPL`
+            nblines=`wc -l $LAST_WPL | cut -d\  -f1`
             case $opt in
         # Load $OPTARGth previous wallpaper in last list
             p)
                 numline=$((numline - OPTARG))
                 if [ $numline -lt 1 ]; then
-                    numline=`wc -l $LAST_WPL | cut -d\  -f1`
+                    numline=$nblines
                 fi
                 ;;
         # Load $OPTARGth next wallpaper in last list
             n) 
                 numline=$((numline + OPTARG))
-                if [ $numline -gt `wc -l $LAST_WPL | cut -d\  -f1` ]; then
+                if [ $numline -gt $nblines ]; then
                     numline=1
                 fi
                 ;;
@@ -333,7 +334,7 @@ done
 wps=${wps%\\n} # Remove last \n
 
 # Exit if there is one or no wallpaper in the list
-wpsnb=`echo "$wps" | wc -l | cut -d\  -f1`
+wpsnb=`echo "$wps" | wc -l`
 if [ $wpsnb -le 1 ]; then
     if [ $wpsnb -eq 0 ]; then
         echo "No wallpaper found. Exiting..."
