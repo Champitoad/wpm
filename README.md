@@ -30,15 +30,15 @@ wpm    -I[f|d]
 
 Create the list of wallpapers with the paths of the quoted list given in argument.
 
-**`-f`** : Loads one or more image files (list order equal to argument order)  
-**`-d`** : Loads one or more directories filled exclusively with image files (list order equal to argument order, with alphabetical order per directory)  
+**`-f`** : Loads one or more image files (list order equal to arguments order)  
+**`-d`** : Loads one or more directories filled exclusively with image files (list order equal to arguments order, with alphabetical order per directory)  
 
 ### Custom mode (-C option)
 
 Without options, loads the list of wallpapers contained within the file given in argument (default set to *.wpm/custom.wpl*).
 The list must contain one absolute path to a wallpaper per line.
 
-**`-s`** : Appends the current wallpaper to the end of the custom list  
+**`-s`** : Appends the current wallpaper at the end of the custom list  
 **`-r`** : Removes the current wallpaper from the custom list  
 
 ### Last mode (-L option)
