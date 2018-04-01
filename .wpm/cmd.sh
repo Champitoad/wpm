@@ -1,8 +1,8 @@
 # Get current wallpaper
 get_wp () { 
-    echo `gsettings get org.gnome.desktop.background picture-uri` | tr -d \'
+    echo $(tail -n1 ~/.fehbg | cut -d\' -f2)
 }
 # Set current wallpaper
 set_wp () { 
-    gsettings set org.gnome.desktop.background picture-uri "$1"
+    feh --bg-fill "$1"
 }

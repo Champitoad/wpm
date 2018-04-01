@@ -14,7 +14,7 @@ Simply set the current wallpaper to the first wallpaper of the list.
 
 #### Daemon mode (**-D** option)
 
-The program runs indefinitely, looping over the list and changing the current wallpaper an every fixed amount of time given in milliseconds in argument (default set to 6 minutes). Will stop if another instance of the program in daemon mode has started.
+The program runs indefinitely, looping over the list and changing the current wallpaper an every fixed amount of time given in seconds in argument (default set to 6 minutes). Will stop if another instance of the program in daemon mode has started.
 
 ### Synopsis
 

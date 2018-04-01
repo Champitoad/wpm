@@ -21,8 +21,8 @@ noopt=true # True if no mode(s)-specific options are given
 
 
 if [ $# -eq 0 ]; then
-    echo "Usage: wpm    -Mf         \"<wallpaper>...\"  [-R]    [-D [<delay>]]"
-    echo "       wpm    -Md         \"<directory>...\"  [-R]    [-D [<delay>]]"
+    echo "Usage: wpm    -Mf         \"<wallpaper>...\"    [-R]    [-D [<delay>]]"
+    echo "       wpm    -Md         \"<directory>...\"    [-R]    [-D [<delay>]]"
     echo "       wpm    -C[s|r]     [<wallpaper_list>]  [-R]    [-D [<delay>]]"
     echo "       wpm    -L[p|n|s    [<wallpaper_list>]] [-R]    [-D [<delay>]]"
     echo "       wpm    -I[f|d]"
@@ -39,7 +39,7 @@ checkmode () {
         for mode in $@; do
             modeopts=$modeopts$(echo $mode | head -c1 | sed "s/\(.\)/\U\1/")"|"
         done
-        modeopts=${modeopts%?}"]"
+        modeopts=${modeopts%|}"]"
         if [ $# -eq 1 ]; then
             modeopts=$(echo $modeopts | tr -d [])
         fi
@@ -136,19 +136,24 @@ while getopts ":f:d:s:r:p:n:RD:" opt; do
             case $opt in
         # Load $OPTARGth previous wallpaper in last list
             p)
-                numline=$((numline - OPTARG))
-                if [ $numline -lt 1 ]; then
-                    numline=$nblines
-                fi
+                l=$((-OPTARG))
                 ;;
         # Load $OPTARGth next wallpaper in last list
             n) 
-                numline=$((numline + OPTARG))
-                if [ $numline -gt $nblines ]; then
-                    numline=1
-                fi
+                l=$((OPTARG))
                 ;;
             esac
+            numline=$((numline + l - 1))
+            if [ $numline -ge 0 ]; then
+                numline=$((numline % nblines))
+            elif [ $numline -lt 0 ]; then
+                if [ $((-numline % nblines)) -eq 0 ]; then
+                    numline=0
+                else
+                    numline=$((nblines - -numline % nblines))
+                fi
+            fi
+            numline=$((numline + 1))
             set_wp "$(sed "${numline}q;d" $LAST_WPL)"
             exit 0
             ;;
@@ -264,10 +269,10 @@ while getopts ":f:d:s:r:p:n:RD:" opt; do
             esac
             ;;
     ### Mode independant options ###
-        # Use a default delay of 6 minutes in daemon mode
+        # Use a default delay of 6 minutes (360 seconds) in daemon mode
         D)
             daemon=true
-            delay=600
+            delay=360
             ;;
         esac
         ;;
@@ -283,15 +288,23 @@ shift $((OPTIND - 1)) # Remove options and their arguments from argument list
 
 ##### Mode specific operations #####
 
-if [ $mode = manual ]; then
-    # Quit if there are no additional options
-    if [ $noopt = true ]; then
-        echo "Usage: wpm -Mf <wallpaper>..."
-        echo "       wpm -Md <directory>... [-R][-D [<delay>]]"
-        exit 0
-    fi
-else
-    if [ $mode = custom ]; then
+case $mode in
+    manual)
+        # Quit if there are no additional options
+        if [ $noopt = true ]; then
+            echo "Usage: wpm -Mf <wallpaper>..."
+            echo "       wpm -Md <directory>... [-R][-D [<delay>]]"
+            exit 0
+        fi
+        ;;
+    info)
+        # Quit if there are no additional options
+        if [ $noopt = true ]; then
+            echo "Usage: wpm -I[f|d]"
+            exit 0
+        fi
+        ;;
+    custom)
         # Load the custom list passed in argument
         if [ -n "$1" ]; then
             if [ -f $1 ]; then
@@ -300,17 +313,16 @@ else
                 echo "Wallpaper list must be a regular file"
                 exit 3
             fi
-        # Load th default custom list without argument
+        # Or load the default custom list if no argument
         else
             load_wpl $CUSTOM_WPL
         fi
-    else
-        if [ $mode = last ]; then
-            # Load the last list
-            load_wpl $LAST_WPL
-        fi
-    fi
-fi
+        ;;
+    last)
+        # Load the last list
+        load_wpl $LAST_WPL
+        ;;
+esac
 
 
 ##### One instance of wpm at a time #####
