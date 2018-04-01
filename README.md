@@ -1,6 +1,6 @@
 # wpm
 
-**`wpm`** is a command-line wallpaper manager written in Bash, designed primarily for the GNOME desktop environment. However, the commands used to get/set the current wallpaper can be modified in *.wpm/cmd.sh*.
+**`wpm`** is a command-line wallpaper manager written in Bash. Commands used to get/set the current wallpaper can be modified in *.wpm/cmd.sh*, which makes it pretty much platform agnostic.
 
 ## Usage
 
